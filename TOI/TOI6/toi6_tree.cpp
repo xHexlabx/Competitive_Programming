@@ -6,6 +6,7 @@ int main(){
     
     vector<pair<int , int>>node_1 ;
     vector<pair<int , int>>node_2 ;
+    
     while(t-- ){
         node_1.clear() ;
         node_2.clear() ;
