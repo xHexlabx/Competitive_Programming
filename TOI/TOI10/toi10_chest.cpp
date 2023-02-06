@@ -6,9 +6,9 @@
 #define ull unsigned long long 
 #define pii pair<int , int>
 using namespace std;
-struct data {
+struct Data {
 	int x , idx , stat ;
-	bool operator <(const data & d2)const{
+	bool operator <(const Data & d2)const{
 		if(idx != d2.idx){
 			return idx < d2.idx ;
 		}
@@ -17,10 +17,10 @@ struct data {
 		}
 	} 
 };
-vec<data>code ;
+vec<Data>code ;
 vec<int>unique_factor(8);
 int main(){
-	//_Xeno_
+
 	ios_base :: sync_with_stdio(0),cin.tie(0);
 	ll MAX = 1 , cnt ;
 	int m , n , x , str , stp ;
