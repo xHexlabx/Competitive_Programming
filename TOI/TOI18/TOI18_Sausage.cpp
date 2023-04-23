@@ -2,12 +2,12 @@
 
 using namespace std;
 
-long long dp[5001][5001] ;
-long long dp2[5001] ;
-long long arr[5001] ;
+int dp[5001][5001] ;
+int dp2[5001] ;
+int arr[5001] ;
 int n ;
 
-long long solve(int l , int r){
+int solve(int l , int r){
     if(l == r){
         return dp[l][r] = arr[l];
     }
