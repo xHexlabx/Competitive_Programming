@@ -9,7 +9,7 @@ class Segment {
     public : 
 
         void init(){
-            seg = vector<int>(4 * 40001 , INT_MAX) ;
+            seg = vector<int>(4 * 40001 , 2000001) ;
             return ;
         }
 
@@ -31,7 +31,7 @@ class Segment {
 
         int query(int ql  , int qr , int l , int r , int node){
             
-            if(r < ql || l > qr)return INT_MAX ;
+            if(r < ql || l > qr)return 2000001 ;
             if(ql <= l && r <= qr)return seg[node] ;
 
             int mid = (l + r) >> 1 ;
@@ -55,19 +55,21 @@ struct node {
 
 int m , n , k , p , size_col , lower_col , upper_col;
 
-int sx[40001] , sy[40001] , dx[40001] , dy[40001] , compressed_idx[40001] , dp[18][40001] , ans_dis = INT_MAX , ans_ticket ;
+int sx[40001] , sy[40001] , dp[18][20001] , ans_dis = INT_MAX , ans_ticket ;
 
-node node_list [40001] ;
+node node_list [20001] ;
 
 vector<int>col_list ;
 
 map<node , node> mpp ;
+map<int , int>compressed_idx ;
+map<int , int>compressed_idx_src ;
 
 void init(){
 
     for(int i = 0 ; i <= 17 ; i ++ ){
-        for(int j = 1 ; j <= 40000 ; j ++ ){
-            dp[i][j] = INT_MAX ;
+        for(int j = 1 ; j <= 20000 ; j ++ ){
+            dp[i][j] = 2000001 ;
         }
     }
 
@@ -80,8 +82,9 @@ void coordinate_compression(){
 
     size_col = col_list.size() ;
 
-    for(int i = 1 ; i <= 2 * k ; i ++ ){
+    for(int i = 1 ; i <= k ; i ++ ){
         compressed_idx[i] = lower_bound(col_list.begin() , col_list.end() , node_list[i].y ) - col_list.begin() + 1 ;
+        compressed_idx_src[i] = lower_bound(col_list.begin() , col_list.end() , mpp[node_list[i]].y ) - col_list.begin() + 1 ;
     }    
 
 }
@@ -101,22 +104,21 @@ int main(){
         col_list.push_back(sy[i * 2]) ;
         col_list.push_back(sy[i * 2 - 1]) ;
 
-        node_list[i * 2 - 1] = {sx[i * 2 - 1] , sy[i * 2 - 1]} ;
-        node_list[i * 2] = {sx[i * 2] , sy[i * 2]} ;
-
-        mpp[{sx[i * 2 - 1] , sy[i * 2 - 1]}] = {sx[i * 2], sy[i * 2]} ;
+        node_list[i] = {sx[i * 2] , sy[i * 2]} ;
         mpp[{sx[i * 2] , sy[i * 2]}] = {sx[i * 2 - 1] , sy[i * 2 - 1]} ;
     }
 
     ans_dis = (m - 1) + (n - 1) ;
     ans_ticket = 0 ;
 
-    sort(node_list + 1 , node_list + 2 * k + 1) ;
+    sort(node_list + 1 , node_list + k + 1) ;
 
-    for(int i = 1 ; i <= 2 * k ; i ++ ){
+    for(int i = 1 ; i <= k ; i ++ ){
          dp[0][i] = (node_list[i].x - 1) + (node_list[i].y - 1) ;
+        //  cout << dp[0][i] << ' ';
     }
 
+    // cout << '\n' ;
     coordinate_compression() ;
 
     for(int ticket = 1 ; ticket <= p ; ticket ++ ){
@@ -124,37 +126,36 @@ int main(){
         Seg[0].init() ;
         Seg[1].init() ;
 
-        for(int i = 1 ; i <= 2 * k ; i ++ ){
+        for(int i = 1 ; i <= k ; i ++ ){
 
-            Seg[0].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] - mpp[node_list[i]].x - mpp[node_list[i]].y , 1) ;
-            Seg[1].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] - mpp[node_list[i]].x + mpp[node_list[i]].y , 1) ;
+            Seg[0].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] - node_list[i].x - node_list[i].y , 1) ;
+            Seg[1].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] - node_list[i].x + node_list[i].y , 1) ;
 
-            lower_col = Seg[0].query(1 , compressed_idx[i] , 1 , size_col , 1) + node_list[i].x + node_list[i].y ;
-            upper_col = Seg[1].query(compressed_idx[i] , size_col , 1 , size_col , 1) + node_list[i].x - node_list[i].y ;
+            lower_col = Seg[0].query(1 , compressed_idx_src[i] , 1 , size_col , 1) + mpp[node_list[i]].x + mpp[node_list[i]].y ;
+            upper_col = Seg[1].query(compressed_idx_src[i] , size_col , 1 , size_col , 1) + mpp[node_list[i]].x - mpp[node_list[i]].y ;
 
-            dp[ticket][i] = min({dp[ticket][i] , lower_col , upper_col}) ;            
+            dp[ticket][i] = min({dp[ticket - 1][i] , dp[ticket][i] , lower_col , upper_col}) ;            
         }
 
         Seg[0].init() ;
         Seg[1].init() ;
 
-        for(int i = 2 * k ; i >= 1 ; i -- ){
+        for(int i = k ; i >= 1 ; i -- ){
 
-            Seg[0].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] + mpp[node_list[i]].x - mpp[node_list[i]].y , 1) ;
-            Seg[1].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] + mpp[node_list[i]].x + mpp[node_list[i]].y , 1) ;
+            Seg[0].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] + node_list[i].x - node_list[i].y , 1) ;
+            Seg[1].update(1 , size_col , compressed_idx[i] , dp[ticket - 1][i] + node_list[i].x + node_list[i].y , 1) ;
 
-            lower_col = Seg[0].query(1 , compressed_idx[i] , 1 , size_col , 1) - node_list[i].x + node_list[i].y ;
-            upper_col = Seg[1].query(compressed_idx[i] , size_col , 1 , size_col , 1) - node_list[i].x - node_list[i].y ;
+            lower_col = Seg[0].query(1 , compressed_idx_src[i]  , 1 , size_col , 1) - mpp[node_list[i]].x + mpp[node_list[i]].y ;
+            upper_col = Seg[1].query(compressed_idx_src[i]  , size_col , 1 , size_col , 1) - mpp[node_list[i]].x - mpp[node_list[i]].y ;
 
-            dp[ticket][i] = min({dp[ticket][i] , lower_col , upper_col}) ;            
+            dp[ticket][i] = min({dp[ticket - 1][i] , dp[ticket][i] , lower_col , upper_col}) ;            
         }
 
-        for(int i = 1 ; i <= 2 * k ; i ++ ){
+        for(int i = 1 ; i <= k ; i ++ ){
             cout << dp[ticket][i] << ' ' ;
             if(m + n - node_list[i].x - node_list[i].y + dp[ticket][i] < ans_dis){
                 ans_dis = m + n - node_list[i].x - node_list[i].y + dp[ticket][i] ;
                 ans_ticket = ticket ;
-                
             }
         }
         
