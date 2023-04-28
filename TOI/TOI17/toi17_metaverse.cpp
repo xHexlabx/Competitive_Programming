@@ -1,75 +1,88 @@
 #include<bits/stdc++.h>
 
-using namespace std ;
+using namespace std;
 
-#pragma GCC optimize("O3")
-#pragma GCC target("sse4")
+struct node {
 
-int now = 0 , pre = 1 ; 
-int dp[2][20001] ;
+    int w_r , w_c , o_r , o_c ; 
 
-struct coordinate {
-    int x , y ;
+    node(){}
+
+    node (int a , int b , int c , int d) { 
+        w_r = a , w_c = b , o_r = c , o_c = d ;
+    }
+
 };
 
-int m , n , k , p ;
+int dis(node j , node i){
 
-coordinate in[20001] , out[20001] ;
+    return abs(j.o_r - i.w_r) + abs(j.o_c - i.w_c) ;
 
-int cal(coordinate a , coordinate b){
-    return abs(a.x - b.x) + abs(a.y - b.y) ;
 }
 
-int dis = INT_MAX ;
-int ticket = INT_MAX ;
+int dp[20][20001] , mindis , minticket , m , n , k , p ;
+
+node node_list[20001] ;
+node s , e ;
+
+void solve(){
+
+    for(int i = 1 ; i <= k ; i ++ ){
+
+        dp[1][i] = dis(s , node_list[i]) ;
+
+        if(dp[1][i] + dis(node_list[i] , e) < mindis){
+            mindis = dp[1][i] + dis(node_list[i] , e) ;
+            minticket = 1 ; 
+        }
+
+    }
+
+    for(int t = 2 ; t <= p ; t ++ ){
+
+        for(int i = 1 ; i <= k ; i ++ ){
+
+            dp[t][i] = INT_MAX ;
+
+            for(int j = 1 ; j <= k ; j ++ ){
+                dp[t][i] = min(dp[t][i] , dp[t - 1][j] + dis(node_list[j] , node_list[i])) ;
+            }
+
+            if(dp[t][i] + dis(node_list[i] , e) < mindis){
+                mindis = dp[t][i] + dis(node_list[i] , e) ;
+                minticket = t ; 
+            }
+        }
+        
+    }
+
+}
 
 int main(){
 
-    ios_base :: sync_with_stdio(0) , cin.tie(0);
+    ios_base :: sync_with_stdio(0) , cin.tie(0) ;
 
     cin >> m >> n >> k >> p ;
 
-    for(int i = 0 ; i < k ; i ++ ){
-        cin >> in[i].x >> in[i].y >> out[i].x >> out[i].y ;
+    for(int i = 1 ; i <= k ; i ++ ){
+        
+        int w_r , w_c , o_r , o_c ;
+        
+        cin >> w_r >> w_c >> o_r >> o_c ;
+
+        node_list[i] = node(w_r , w_c , o_r , o_c) ;
+
     }
-    for(int i = 0 ; i <= p ; i ++ ){
-        if(i == 0){
-            for(int dest = 0 ; dest < k ; dest ++ ){
-                dp[now][dest] = cal({1 , 1} , out[dest]) ;
-            }
-            dp[now][k] = cal({1 , 1} , {m , n}) ;
-        }
-        else if(i == 1){
-            
-            for(int dest = 0 ; dest <= k ; dest ++ ){
-                dp[now][dest] = dp[pre][dest] ;
-            }
-            for(int dest = 0 ; dest < k ; dest ++ ){
-                dp[now][dest] = min(dp[now][dest] , cal({1 , 1} , in[dest])) ;
-                dp[now][k] = min(dp[now][k] , dp[now][dest] + cal(out[dest] , {m , n})) ;
-            }
-            
-        }
-        else {
-            for(int dest = 0 ; dest <= k ; dest ++ ){
-                dp[now][dest] = dp[pre][dest] ;
-            }
-            for(int src = 0 ; src < k ; src ++ ){
-                for(int dest = 0 ; dest < k ; dest ++ ){
-                    dp[now][dest] = min(dp[now][dest] , dp[pre][src] + cal(out[src] , in[dest])) ;
-                }
-            }
-            for(int src = 0 ; src < k ; src ++ ){
-                dp[now][k] = min(dp[now][k] , dp[now][src] + cal(out[src] , {m , n})) ;
-            }
-        }
-        if(dp[now][k] < dis){
-            dis = dp[now][k] ;
-            ticket = i ;
-        }
-        swap(pre , now) ;
-    }
-    cout << dis << ' ' << ticket ;
     
+    s = node(1 , 1 , 1 , 1) ;
+    e = node(m , n , m , n) ;
+
+    mindis = (m + n - 2) ;
+    minticket = 0 ;
+
+    solve() ;
+
+    cout << mindis << ' ' << minticket ;
+
     return 0 ;
 }
