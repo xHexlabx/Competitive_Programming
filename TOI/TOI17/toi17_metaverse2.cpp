@@ -175,8 +175,10 @@ int main(){
 
             if(node_list[i].t == 1){
 
-                Seg[0].update(1 , size_col , compressed_index[i] , dp[ticket - 1][get_idx_out[node_list[i]]] - node_list[i].x - node_list[i].y , 1) ;
-                Seg[1].update(1 , size_col , compressed_index[i] , dp[ticket - 1][get_idx_out[node_list[i]]] - node_list[i].x + node_list[i].y , 1) ;
+                Seg[0].update(1 , size_col , compressed_index[i] , 
+                              dp[ticket - 1][get_idx_out[node_list[i]]] - node_list[i].x - node_list[i].y , 1) ;
+                Seg[1].update(1 , size_col , compressed_index[i] , 
+                              dp[ticket - 1][get_idx_out[node_list[i]]] - node_list[i].x + node_list[i].y , 1) ;
 
             }
 
@@ -190,16 +192,21 @@ int main(){
             
             if(node_list[i].t == 0){
 
-                lower_col = Seg[0].query(1 , compressed_index[i] , 1 , size_col , 1 ) - node_list[i].x + node_list[i].y ;
-                upper_col = Seg[1].query(compressed_index[i] , size_col , 1 , size_col , 1 ) - node_list[i].x - node_list[i].y ;
-                dp[ticket][get_idx_out[mpp[node_list[i]]]] = min({dp[ticket][get_idx_out[mpp[node_list[i]]]] , lower_col , upper_col}) ;
+                lower_col = Seg[0].query(1 , compressed_index[i] , 1 , size_col , 1 ) 
+                            - node_list[i].x + node_list[i].y ;
+                upper_col = Seg[1].query(compressed_index[i] , size_col , 1 , size_col , 1 ) 
+                            - node_list[i].x - node_list[i].y ;
+                dp[ticket][get_idx_out[mpp[node_list[i]]]] = min({dp[ticket][get_idx_out[mpp[node_list[i]]]] , 
+                            lower_col , upper_col}) ;
 
             }
 
             if(node_list[i].t == 1){
 
-                Seg[0].update(1 , size_col , compressed_index[i] , dp[ticket - 1][get_idx_out[node_list[i]]] + node_list[i].x - node_list[i].y , 1) ;
-                Seg[1].update(1 , size_col , compressed_index[i] , dp[ticket - 1][get_idx_out[node_list[i]]] + node_list[i].x + node_list[i].y , 1) ;
+                Seg[0].update(1 , size_col , compressed_index[i] , 
+                              dp[ticket - 1][get_idx_out[node_list[i]]] + node_list[i].x - node_list[i].y , 1) ;
+                Seg[1].update(1 , size_col , compressed_index[i] , 
+                              dp[ticket - 1][get_idx_out[node_list[i]]] + node_list[i].x + node_list[i].y , 1) ;
                 
             }
 
