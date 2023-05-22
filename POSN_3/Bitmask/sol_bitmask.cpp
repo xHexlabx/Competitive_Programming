@@ -21,13 +21,13 @@ void init(){
 
 void solve(){
 
-    for(int i = 1 ; i < (1 << N) ; i ++ ){
+    for(int mask = 1 ; mask < (1 << N) ; mask ++ ){
 
-        int state_bit = __builtin_popcount(i) ;
+        int count_bit = __builtin_popcount(mask) ;
 
         for(int j = 1 ; j <= N ; j ++ ){
             int bit = (1 << (j - 1)) ;
-            if(i & bit)dp[i] = min(dp[i] , dp[i ^ bit] + arr[j][state_bit]);
+            if(mask & bit)dp[mask] = min(dp[mask] , dp[mask ^ bit] + arr[j][count_bit]);
         }
 
     }
