@@ -2,29 +2,24 @@
 
 using namespace std;
 
-struct apple {
-    int w ;
-    array<int , 19>poisons ;
+struct edge {
+    int v , w ;
 };
 
 struct state {
     
-    int w ;
-    array<int , 19>poisons ;
+    int v , w ;
 
-    bool operator < (const state & top){
+    bool operator < (const state & top)const {
         return top.w < w ;
-    };
-
+    }
 };
 
-vector<apple>adj[19] ;
-vector<apple>apples ;
+vector<edge>adj[(1 << 19) + 90001] ;
 
-bool end_node[(1 << 19)] ;
-int dis[(1 << 19)] ;
+int dis[(1 << 19) + 90001] ;
 
-int n , s ;
+int n , s , MAX = 0;
 
 int main (){
 
@@ -32,30 +27,82 @@ int main (){
 
     cin >> n >> s ;
 
-    for(int i = 0 ; i < (1 << 19) ; i ++ ){
+    for(int i = 0 ; i < (1 << 19) + n ; i ++ ){
         dis[i] = INT_MAX ;
     }
 
-    for(int i = 0 ; i < n ; i ++ ){
-        
-        apple temp ;
-
-        cin >> temp.w ;
+    for(int mask = 0 ; mask < (1 << 19) ; mask ++ ){
 
         for(int i = 0 ; i < s ; i ++ ){
-            cin >> temp.poisons[i] ;
-        }
 
-        apples.push_back(temp) ;
-
-        for(int i = 0 ; i < s ; i ++ ){
-            if(temp.poisons[i] == 1){
-                adj[i].push_back(temp) ;
+            int bit = (1 << i) ;
+            
+            if(mask & bit){
+                adj[mask + n].push_back({(mask ^ bit) + n , 0}) ;
             }
+
         }
 
     }
 
-    
+    priority_queue<state>pq ;
+
+    for(int i = 0 ; i < n ; i ++ ){
+
+        int weight , src = 0 , dest = 0 , bit ;
+
+        cin >> weight ;
+
+        for(int j = 0 ; j < s ; j ++ ){
+
+            cin >> bit ;
+
+            if(bit == -1){
+                src |= (1 << j) ;
+            }
+
+            if(bit == 1){
+                dest |= (1 << j) ;
+            }
+
+        }
+
+        adj[src + n].push_back({i , 0}) ;
+        adj[i].push_back({dest + n , weight}) ;
+
+        if(src == 0){
+            dis[src + n] = 0 ;
+            pq.push({src + n , 0}) ;
+        }
+    }
+
+    while(!pq.empty()){
+
+        auto temp = pq.top() ;
+        pq.pop() ;
+
+        int v = temp.v ;
+        int w = temp.w ;
+
+        for(auto i : adj[v]){
+
+            int curr_v = i.v ;
+            int curr_w = w + i.w ;
+
+            if(curr_w < dis[curr_v]){
+                
+                dis[curr_v] = curr_w ;
+                pq.push({curr_v , curr_w}) ;
+
+            }
+        }
+    }
+
+    for(int i = 0 ; i < n ; i ++ ){
+        if(dis[i] != INT_MAX)MAX = max(MAX , dis[i]) ;
+    }
+
+    cout << MAX ;
+
     return 0 ;
 }
