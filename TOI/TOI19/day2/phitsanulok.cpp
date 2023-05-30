@@ -67,14 +67,14 @@ int main (){
 
         }
 
+        adj[src + n].push_back({dest + n , weight}) ;
         adj[src + n].push_back({i , 0}) ;
-        adj[i].push_back({dest + n , weight}) ;
 
-        if(src == 0){
-            dis[src + n] = 0 ;
-            pq.push({src + n , 0}) ;
-        }
     }
+
+    dis[n] = 0 ;
+
+    pq.push({n , 0}) ;
 
     while(!pq.empty()){
 
@@ -99,7 +99,7 @@ int main (){
     }
 
     for(int i = 0 ; i < n ; i ++ ){
-        if(dis[i] != INT_MAX)MAX = max(MAX , dis[i]) ;
+        if(dis[i] != INT_MAX)MAX = max(MAX , dis[i]);
     }
 
     cout << MAX ;
