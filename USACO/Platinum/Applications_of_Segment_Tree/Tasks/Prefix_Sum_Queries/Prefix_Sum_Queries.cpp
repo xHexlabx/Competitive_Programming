@@ -2,116 +2,104 @@
 
 using namespace std ;
 
-struct Node {
+const int Size = 2e5 + 1 ;
 
+long long arr[Size] ;
+struct Node {
+    
     long long sum , prefix ;
 
-    Node* l = nullptr ;
-    Node* r = nullptr ;
+    Node () {
 
-    Node (int Val) {
-        sum = Val ;
-        prefix = 0 ;
+    }
+
+    Node (long long Sum , long long Prefix) {
+        sum = Sum ;
+        prefix = max(0LL , Prefix) ;
+    } 
+
+    Node operator + (Node rhs) {
+        return Node(sum + rhs.sum , max(prefix , sum + rhs.prefix)) ;
     }
 };
-
-void merge(Node* node){
-
-    node->sum = node->l->sum + node->r->sum ;
-    node->prefix = max(node->l->sum + node->r->prefix , node->l->prefix) ;
-
-    return ;
-};
-
-void setNode(Node* node , long long val){
-    node->sum = val ;
-    long long x = 0 ;
-    node->prefix = max(x , val) ;
-    return ;
-}
-
-const int Size = 2e5 + 1 ;
-long long arr[Size] ;
 
 struct SegmentTree {
 
-    Node* root = new Node(0);
+    Node seg[4 * Size] ;
 
-    void build(int l , int r , Node* node){
-
+    void build (int l , int r , int node){
+        
         if(l == r){
-            setNode(node , arr[l]) ;
+            seg[node] = Node(arr[l] , arr[l]) ;
             return ;
         }
-
+        
         int mid = (l + r) >> 1 ;
 
-        node->l = new Node(0) ;
-        node->r = new Node(0) ;
+        build(l , mid , node * 2) ;
+        build(mid + 1 , r , node * 2 + 1) ;
 
-        build(l , mid , node->l) ;
-        build(mid + 1 , r , node->r) ;
+        seg[node] = seg[node * 2] + seg[node * 2 + 1] ;
 
-        merge(node) ;
-
+        return ; 
     }
 
-    void set(int l , int r , int idx , long long val , Node* node){
+    void set (int l , int r , int idx , long long val , int node){
 
         if(r < idx || l > idx)return ;
 
         if(l == r){
-            setNode(node , val) ;
+            seg[node] = Node(val , val) ;
             return ;
         }
 
         int mid = (l + r) >> 1 ;
 
-        set(l , mid , idx , val , node->l) ;
-        set(mid + 1 , r , idx , val , node->r) ;
+        set(l , mid , idx , val , node * 2) ;
+        set(mid + 1 , r , idx , val , node * 2 + 1) ;
 
-        merge(node);
+        seg[node] = seg[node * 2] + seg[node * 2 + 1] ;
 
+        return ;
     }
 
-    long long get(int ql , int qr , int l , int r , Node* node){
-        
-        if(r < ql || l > qr)return 0 ;
-        if(l >= ql && r <= qr)return node->prefix ;
+    Node get (int ql , int qr , int l , int r , int node){
+
+        if(r < ql || l > qr)return Node(0 , 0) ;
+        if(ql <= l && r <= qr)return seg[node] ;
 
         int mid = (l + r) >> 1 ;
-        return get(ql , qr , l , mid , node->l) + get(ql , qr , mid + 1 , r , node->r) ;
+        return get(ql , qr , l , mid , node * 2) + get(ql , qr , mid + 1 , r , node * 2 + 1) ;
     }
-
 }seg;
 
-int n , q , mode , k , u , a , b;
+int n , q , mode , k , a , b ;
+long long u ;
 
 int main(){
 
-    ios_base :: sync_with_stdio(0) , cin.tie(0);
+    ios_base :: sync_with_stdio(0) , cin.tie(0) ;
 
     cin >> n >> q ;
 
-    for(int i = 1 ; i <= n ; i ++ ){
-        cin >> arr[i] ;
-    }
+    for(int i = 1 ; i <= n ; i ++ )cin >> arr[i] ;
 
-    seg.build(1 , n , seg.root) ;
+    seg.build(1 , n , 1) ;
 
-    while(q -- ){
-
+    while (q --)
+    {
         cin >> mode ;
 
         if(mode == 1){
             cin >> k >> u ;
-            seg.set(1 , n , k , u , seg.root) ;
+            arr[k] = u ;
+            seg.set(1 , n , k , u , 1) ;
         }
         else {
             cin >> a >> b ;
-            cout << seg.get(a , b , 1 , n , seg.root) << '\n' ;
+            cout << seg.get(a , b , 1 , n , 1).prefix << '\n' ;
         }
     }
-
+    
     return 0 ;
 }
